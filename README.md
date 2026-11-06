@@ -1,3 +1,10 @@
+<div align="center">
+  <img src="./banner.svg" alt="Anivesh91 Profile Banner" width="100%" />
+</div>
+
+
+
+
 # 💫 About Me:
 Hi 👋, I'm Anivesh Sikarwar<br><br>🎓 Computer Science & Engineering undergraduate at SGSITS, Indore<br>💻 Full-Stack Developer interested in Backend Engineering & System Design<br>🔭 Currently building production-oriented Full-Stack and Backend projects<br>🌱 Learning System Design, Cloud, DevOps & Production Deployment<br>⚙️ Working with React, Node.js, Express, PostgreSQL, MongoDB, Redis & Docker<br>🧠 Strengthening DSA and core CS fundamentals for Software Engineering roles<br>🚀 Interested in building scalable and reliable software systems
 
