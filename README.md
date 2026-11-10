@@ -65,6 +65,7 @@
 
 ---
 
+<!-- Contribution Snake (saved for later: uncomment to display on profile)
 ### 🐍 Contribution Snake
 
 <div align="center">
@@ -74,8 +75,7 @@
     <img alt="GitHub Contribution Snake" src="https://raw.githubusercontent.com/Anivesh91/Anivesh91/output/github-snake-dark.svg" width="100%" />
   </picture>
 </div>
-
----
+-->
 
 <div align="center">
   <a href="https://visitcount.itsvg.in">
