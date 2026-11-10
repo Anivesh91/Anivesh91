@@ -19,8 +19,8 @@
 
   <p align="center">
     <img src="https://img.shields.io/badge/CSE%20Undergrad-SGSITS%2C%20Indore-111827?style=for-the-badge" alt="CSE Undergrad at SGSITS Indore" />
-    <img src="https://img.shields.io/badge/Focus-Backend%20%26%20System%20Design-6D28D9?style=for-the-badge" alt="Backend and System Design" />
-    <img src="https://img.shields.io/badge/Exploring-Cloud%2C%20DevOps%20%26%20DSA-0891B2?style=for-the-badge" alt="Cloud DevOps and DSA" />
+    <img src="https://img.shields.io/badge/Focus-Backend%20%26%20System%20Design-B91C1C?style=for-the-badge" alt="Backend and System Design" />
+    <img src="https://img.shields.io/badge/Exploring-Cloud%2C%20DevOps%20%26%20DSA-C2410C?style=for-the-badge" alt="Cloud DevOps and DSA" />
   </p>
 </div>
 
@@ -57,10 +57,10 @@
 ### 📊 GitHub Analytics
 
 <div align="center">
-  <img src="https://github-readme-stats.shion.dev/api?username=Anivesh91&show_icons=true&include_all_commits=true&bg_color=070b14&title_color=00f0ff&icon_color=bd00ff&text_color=e2e8f0&border_color=1a2333&border_radius=12" height="175" alt="GitHub Stats" />
-  <img src="https://github-readme-stats.shion.dev/api/top-langs/?username=Anivesh91&layout=compact&bg_color=070b14&title_color=00f0ff&text_color=e2e8f0&border_color=1a2333&border_radius=12" height="175" alt="Top Languages" />
+  <img src="https://raw.githubusercontent.com/Anivesh91/Anivesh91/output/github-stats.svg" height="188" alt="GitHub Overview Stats" />
+  <img src="https://raw.githubusercontent.com/Anivesh91/Anivesh91/output/top-langs.svg" height="188" alt="Most Used Languages" />
   <br /><br />
-  <img src="https://streak-stats.demolab.com/?user=Anivesh91&background=070b14&border=1a2333&stroke=1a2333&ring=00f0ff&fire=bd00ff&currStreakNum=ffffff&sideNums=ffffff&currStreakLabel=00f0ff&sideLabels=00f0ff&dates=94a3b8&border_radius=12" alt="GitHub Streak" />
+  <img src="https://raw.githubusercontent.com/Anivesh91/Anivesh91/output/github-streak.svg" height="195" alt="GitHub Contribution Streak" />
 </div>
 
 ---
