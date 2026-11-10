@@ -17,6 +17,7 @@ import os
 import re
 import ssl
 import subprocess
+import sys
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -99,49 +100,41 @@ def api_headers(token: str) -> dict[str, str]:
     return h
 
 
-def fetch_contributions_calendar(username: str, created_year: int, current_year: int) -> dict[str, Any]:
+def rest_get_json(url: str, token: str = "") -> Any:
     """
-    Parse exact daily counts directly from GitHub's live profile contribution graph
-    for every year from account creation to current_year.
-    Includes private contributions automatically if profile setting is enabled.
+    Fetch JSON from GitHub REST API.
+    If a repo-scoped Actions GITHUB_TOKEN receives 401/403/404 on a cross-repo
+    or search endpoint, automatically retry without Authorization for public data.
     """
-    daily_counts: dict[str, int] = {}
-    yearly_totals: dict[int, int] = {}
+    if token:
+        try:
+            return json.loads(http_get(url, api_headers(token)))
+        except urllib.error.HTTPError as exc:
+            if exc.code not in (401, 403, 404):
+                raise
+        except subprocess.CalledProcessError:
+            pass
+    return json.loads(http_get(url, api_headers("")))
 
-    for yr in range(created_year, current_year + 1):
-        url = f"https://github.com/users/{urllib.parse.quote(username)}/contributions?from={yr}-01-01&to={yr}-12-31"
-        page = http_get(url)
 
-        hdr_match = re.search(rf"([\d,]+)\s+contributions?\s+in\s+{yr}", page)
-        hdr_total = int(hdr_match.group(1).replace(",", "")) if hdr_match else None
+def fmt_short_date(d: date) -> str:
+    return f"{d.strftime('%b')} {d.day}"
 
-        tds = re.findall(
-            r'<td[^>]+data-date="(\d{4}-\d{2}-\d{2})"[^>]+id="(contribution-day-component-[^"]+)"[^>]+data-level="(\d+)"',
-            page,
-        )
-        tips = dict(
-            re.findall(
-                r'<tool-tip[^>]+for="(contribution-day-component-[^"]+)"[^>]*>([^<]+)</tool-tip>',
-                page,
-            )
-        )
 
-        yr_sum = 0
-        for d_str, cid, lvl in tds:
-            tip = tips.get(cid, "")
-            m = re.match(r"(\d+)\s+contribution", tip)
-            cnt = int(m.group(1)) if m else (1 if int(lvl) > 0 else 0)
-            daily_counts[d_str] = cnt
-            yr_sum += cnt
+def fmt_range(start: date | None, end: date | None, fallback: str = "-") -> str:
+    if not start or not end:
+        return fallback
+    if start == end:
+        return fmt_short_date(start)
+    return f"{fmt_short_date(start)} - {fmt_short_date(end)}"
 
-        yearly_totals[yr] = hdr_total if hdr_total is not None else yr_sum
 
-    # Rolling "in the last year" headline from GitHub profile
-    rolling_html = http_get(f"https://github.com/users/{urllib.parse.quote(username)}/contributions")
-    rolling_match = re.search(r"([\d,]+)\s+contributions?\s+in\s+the\s+last\s+year", rolling_html)
-    last_year_total = int(rolling_match.group(1).replace(",", "")) if rolling_match else yearly_totals.get(current_year, 0)
-
-    # Calculate exact streaks up through today
+def compute_calendar_stats(
+    daily_counts: dict[str, int],
+    yearly_totals: dict[int, int],
+    last_year_total: int,
+    current_year: int,
+) -> dict[str, Any]:
     all_dates = sorted(daily_counts.keys())
     today_utc = datetime.now(timezone.utc).date()
     active_dates = [date.fromisoformat(d) for d, c in daily_counts.items() if c > 0]
@@ -191,47 +184,95 @@ def fetch_contributions_calendar(username: str, created_year: int, current_year:
     }
 
 
-def fmt_short_date(d: date) -> str:
-    return f"{d.strftime('%b')} {d.day}"
-
-
-def fmt_range(start: date | None, end: date | None, fallback: str = "-") -> str:
-    if not start or not end:
-        return fallback
-    if start == end:
-        return fmt_short_date(start)
-    return f"{fmt_short_date(start)} - {fmt_short_date(end)}"
-
-
-def fetch_graphql_private_extras(username: str, token: str, created_year: int, current_year: int) -> dict[str, Any] | None:
+def fetch_contributions_calendar_html(username: str, created_year: int, current_year: int) -> dict[str, Any]:
     """
-    If METRICS_TOKEN (or scoped token) grants GraphQL user queries, gather private + public
-    commit counts, PR count, stars, and repo languages. Returns None cleanly if unauthenticated
-    or scoped down (e.g. single-repo GITHUB_TOKEN without private access).
+    Fallback HTML parser for GitHub's live profile contribution graph
+    when running locally without an API token.
+    """
+    daily_counts: dict[str, int] = {}
+    yearly_totals: dict[int, int] = {}
+
+    for yr in range(created_year, current_year + 1):
+        url = f"https://github.com/users/{urllib.parse.quote(username)}/contributions?from={yr}-01-01&to={yr}-12-31"
+        page = http_get(url)
+
+        hdr_match = re.search(rf"([\d,]+)\s+contributions?\s+in\s+{yr}", page)
+        hdr_total = int(hdr_match.group(1).replace(",", "")) if hdr_match else None
+
+        tds = re.findall(
+            r'<td[^>]+data-date="(\d{4}-\d{2}-\d{2})"[^>]+id="(contribution-day-component-[^"]+)"[^>]+data-level="(\d+)"',
+            page,
+        )
+        tips = dict(
+            re.findall(
+                r'<tool-tip[^>]+for="(contribution-day-component-[^"]+)"[^>]*>([^<]+)</tool-tip>',
+                page,
+            )
+        )
+
+        yr_sum = 0
+        for d_str, cid, lvl in tds:
+            tip = tips.get(cid, "")
+            m = re.match(r"(\d+)\s+contribution", tip)
+            cnt = int(m.group(1)) if m else (1 if int(lvl) > 0 else 0)
+            daily_counts[d_str] = cnt
+            yr_sum += cnt
+
+        yearly_totals[yr] = hdr_total if hdr_total is not None else yr_sum
+
+    rolling_html = http_get(f"https://github.com/users/{urllib.parse.quote(username)}/contributions")
+    rolling_match = re.search(r"([\d,]+)\s+contributions?\s+in\s+the\s+last\s+year", rolling_html)
+    last_year_total = int(rolling_match.group(1).replace(",", "")) if rolling_match else yearly_totals.get(current_year, 0)
+
+    return compute_calendar_stats(daily_counts, yearly_totals, last_year_total, current_year)
+
+
+def fetch_graphql_profile(username: str, token: str) -> dict[str, Any] | None:
+    """
+    Use GitHub GraphQL (works natively in CI with both GITHUB_TOKEN and METRICS_TOKEN)
+    to fetch profile metadata, rolling year total, and multi-year contribution calendar.
     """
     if not token:
         return None
-
     try:
         hdrs = api_headers(token)
-        # Check current & prior years via GraphQL
-        total_commits = 0
-        has_restricted = False
-        repo_query = """
+        profile_query = """
         query($login: String!) {
           user(login: $login) {
+            name
+            login
+            createdAt
             followers { totalCount }
-            pullRequests(states: [OPEN, CLOSED, MERGED]) { totalCount }
-            issues { totalCount }
-            repositories(first: 100, ownerAffiliations: OWNER, isFork: false) {
-              nodes {
-                name
-                isPrivate
-                stargazerCount
-                languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-                  edges {
-                    size
-                    node { name color }
+            contributionsCollection {
+              contributionCalendar {
+                totalContributions
+              }
+            }
+          }
+        }
+        """
+        res = http_post_json("https://api.github.com/graphql", {"query": profile_query, "variables": {"login": username}}, hdrs)
+        u = (res.get("data") or {}).get("user")
+        if not u:
+            return None
+
+        created_date = datetime.fromisoformat(u["createdAt"].replace("Z", "+00:00")).date()
+        current_year = datetime.now(timezone.utc).year
+        last_year_total = int(u["contributionsCollection"]["contributionCalendar"]["totalContributions"])
+
+        yr_query = """
+        query($login: String!, $from: DateTime!, $to: DateTime!) {
+          user(login: $login) {
+            contributionsCollection(from: $from, to: $to) {
+              totalCommitContributions
+              restrictedContributionsCount
+              totalPullRequestContributions
+              contributionCalendar {
+                totalContributions
+                weeks {
+                  contributionDays {
+                    date
+                    contributionCount
                   }
                 }
               }
@@ -239,100 +280,162 @@ def fetch_graphql_private_extras(username: str, token: str, created_year: int, c
           }
         }
         """
-        res = http_post_json("https://api.github.com/graphql", {"query": repo_query, "variables": {"login": username}}, hdrs)
-        if "errors" in res or not res.get("data", {}).get("user"):
-            return None
+        daily_counts: dict[str, int] = {}
+        yearly_totals: dict[int, int] = {}
+        total_commits = 0
+        has_restricted = False
 
-        u = res["data"]["user"]
-        owned_repos = u["repositories"]["nodes"]
-        stars = sum(r["stargazerCount"] for r in owned_repos)
-        langs: dict[str, int] = {}
-        for r in owned_repos:
-            for edge in r["languages"]["edges"]:
-                name = edge["node"]["name"]
-                langs[name] = langs.get(name, 0) + int(edge["size"])
+        # Query in <= 6-month slices so leap years never trip GraphQL's 1-year window limit
+        for yr in range(created_date.year, current_year + 1):
+            yr_start = created_date if yr == created_date.year else date(yr, 1, 1)
+            slices = []
+            mid = date(yr, 6, 30)
+            yr_end = date(yr, 12, 31)
+            if yr_start <= mid:
+                slices.append((yr_start, mid))
+                slices.append((date(yr, 7, 1), yr_end))
+            else:
+                slices.append((yr_start, yr_end))
 
-        contrib_query = """
-        query($login: String!, $from: DateTime!, $to: DateTime!) {
-          user(login: $login) {
-            contributionsCollection(from: $from, to: $to) {
-              totalCommitContributions
-              restrictedContributionsCount
-              totalPullRequestContributions
-              totalRepositoriesWithContributedCommits
-            }
-          }
-        }
-        """
-        contributed_repos = 0
-        for yr in range(created_year, current_year + 1):
-            c_res = http_post_json(
-                "https://api.github.com/graphql",
-                {
-                    "query": contrib_query,
-                    "variables": {
-                        "login": username,
-                        "from": f"{yr}-01-01T00:00:00Z",
-                        "to": f"{yr}-12-31T23:59:59Z",
+            yr_total = 0
+            for s_from, s_to in slices:
+                c_res = http_post_json(
+                    "https://api.github.com/graphql",
+                    {
+                        "query": yr_query,
+                        "variables": {
+                            "login": username,
+                            "from": f"{s_from.isoformat()}T00:00:00Z",
+                            "to": f"{s_to.isoformat()}T23:59:59Z",
+                        },
                     },
-                },
-                hdrs,
-            )
-            if "errors" in c_res or not c_res.get("data", {}).get("user"):
-                continue
-            cc = c_res["data"]["user"]["contributionsCollection"]
-            total_commits += int(cc["totalCommitContributions"]) + int(cc["restrictedContributionsCount"])
-            if int(cc["restrictedContributionsCount"]) > 0:
-                has_restricted = True
-            if yr == current_year:
-                contributed_repos = int(cc["totalRepositoriesWithContributedCommits"])
+                    hdrs,
+                )
+                if "errors" in c_res:
+                    print(f"GraphQL calendar notice ({yr}): {c_res['errors']}", file=sys.stderr)
+                cu = (c_res.get("data") or {}).get("user")
+                if not cu:
+                    return None
+                cc = cu["contributionsCollection"]
+                cal = cc["contributionCalendar"]
+                yr_total += int(cal["totalContributions"])
+                for wk in cal["weeks"]:
+                    for day in wk["contributionDays"]:
+                        d_str = day["date"]
+                        if s_from.isoformat() <= d_str <= s_to.isoformat():
+                            daily_counts[d_str] = int(day["contributionCount"])
+                total_commits += int(cc["totalCommitContributions"]) + int(cc["restrictedContributionsCount"])
+                if int(cc["restrictedContributionsCount"]) > 0:
+                    has_restricted = True
+            yearly_totals[yr] = yr_total
+
+        calendar = compute_calendar_stats(daily_counts, yearly_totals, last_year_total, current_year)
+
+        # Fetch repos/PRs in a separate query so a single-repo token restriction never fails the calendar above
+        extras: dict[str, Any] = {}
+        try:
+            repo_query = """
+            query($login: String!) {
+              user(login: $login) {
+                pullRequests(states: [OPEN, CLOSED, MERGED]) { totalCount }
+                issues { totalCount }
+                repositories(first: 100, ownerAffiliations: OWNER, isFork: false) {
+                  nodes {
+                    name
+                    isPrivate
+                    stargazerCount
+                    languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                      edges {
+                        size
+                        node { name }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """
+            r_res = http_post_json("https://api.github.com/graphql", {"query": repo_query, "variables": {"login": username}}, hdrs)
+            ru = (r_res.get("data") or {}).get("user")
+            if ru and "errors" not in r_res:
+                owned_repos = ru["repositories"]["nodes"]
+                langs: dict[str, int] = {}
+                for r in owned_repos:
+                    for edge in r["languages"]["edges"]:
+                        lname = edge["node"]["name"]
+                        langs[lname] = langs.get(lname, 0) + int(edge["size"])
+                extras = {
+                    "prs": int(ru["pullRequests"]["totalCount"]),
+                    "issues": int(ru["issues"]["totalCount"]),
+                    "stars": sum(int(r["stargazerCount"]) for r in owned_repos),
+                    "owned_repos": len(owned_repos),
+                    "has_private_repos": any(r["isPrivate"] for r in owned_repos),
+                    "languages": langs,
+                }
+        except Exception:
+            pass
 
         return {
+            "name": u.get("name") or username,
+            "login": u.get("login") or username,
+            "created_date": created_date,
             "followers": int(u["followers"]["totalCount"]),
-            "prs": int(u["pullRequests"]["totalCount"]),
-            "issues": int(u["issues"]["totalCount"]),
-            "stars": stars,
-            "owned_repos": len(owned_repos),
             "commits": total_commits,
-            "has_private_scope": any(r["isPrivate"] for r in owned_repos) or has_restricted,
-            "contributed_repos": contributed_repos,
-            "languages": langs,
+            "has_private_scope": has_restricted or bool(extras.get("has_private_repos")),
+            "calendar": calendar,
+            **extras,
         }
     except Exception:
         return None
 
 
-def fetch_rest_metrics(username: str, token: str) -> dict[str, Any]:
-    hdrs = api_headers(token)
-    user = json.loads(http_get(f"https://api.github.com/users/{urllib.parse.quote(username)}", hdrs))
-    repos = json.loads(http_get(f"https://api.github.com/users/{urllib.parse.quote(username)}/repos?per_page=100&type=owner", hdrs))
-    non_fork = [r for r in repos if not r.get("fork")]
+def fetch_rest_metrics(username: str, token: str, need_repos: bool = True, need_prs: bool = True) -> dict[str, Any]:
+    u_q = urllib.parse.quote(username)
+    user = rest_get_json(f"https://api.github.com/users/{u_q}", token)
 
-    stars = sum(int(r.get("stargazers_count", 0)) for r in non_fork)
+    owned_repos = 0
+    stars = 0
     langs: dict[str, int] = {}
-    for r in non_fork:
-        r_langs = json.loads(http_get(r["languages_url"], hdrs))
-        for k, v in r_langs.items():
-            langs[k] = langs.get(k, 0) + int(v)
+    if need_repos:
+        try:
+            repos = rest_get_json(f"https://api.github.com/users/{u_q}/repos?per_page=100&type=owner", token)
+            non_fork = [r for r in repos if not r.get("fork")]
+            owned_repos = len(non_fork)
+            stars = sum(int(r.get("stargazers_count", 0)) for r in non_fork)
+            for r in non_fork:
+                try:
+                    r_langs = rest_get_json(r["languages_url"], token)
+                    for k, v in r_langs.items():
+                        langs[k] = langs.get(k, 0) + int(v)
+                except Exception:
+                    pass
+        except Exception as exc:
+            print(f"Info: REST repos scan skipped ({exc})", file=sys.stderr)
 
-    prs = json.loads(http_get(f"https://api.github.com/search/issues?q=author:{urllib.parse.quote(username)}+type:pr", hdrs))
-    issues = json.loads(http_get(f"https://api.github.com/search/issues?q=author:{urllib.parse.quote(username)}+type:issue", hdrs))
+    pr_count = 0
+    if need_prs:
+        try:
+            prs = rest_get_json(f"https://api.github.com/search/issues?q=author:{u_q}+type:pr", token)
+            pr_count = int(prs.get("total_count", 0))
+        except Exception:
+            pass
 
-    # Count public commits attributed to username
-    cmts_hdr = dict(hdrs)
-    cmts_hdr["Accept"] = "application/vnd.github.cloak-preview+json"
-    cmts = json.loads(http_get(f"https://api.github.com/search/commits?q=author:{urllib.parse.quote(username)}", cmts_hdr))
+    public_commits = 0
+    try:
+        cmts = rest_get_json(f"https://api.github.com/search/commits?q=author:{u_q}", token)
+        public_commits = int(cmts.get("total_count", 0))
+    except Exception:
+        pass
 
     return {
         "name": user.get("name") or username,
         "login": user.get("login") or username,
         "created_at": user["created_at"],
         "followers": int(user.get("followers", 0)),
-        "owned_repos": len(non_fork),
+        "owned_repos": owned_repos,
         "stars": stars,
-        "prs": int(prs.get("total_count", 0)),
-        "issues": int(issues.get("total_count", 0)),
-        "public_commits": int(cmts.get("total_count", 0)),
+        "prs": pr_count,
+        "public_commits": public_commits,
         "languages": langs,
     }
 
@@ -427,7 +530,7 @@ def render_stats_svg(metrics: dict[str, Any]) -> str:
 
 
 def render_langs_svg(metrics: dict[str, Any]) -> str:
-    langs: dict[str, int] = metrics["languages"]
+    langs: dict[str, int] = metrics["languages"] or {"Code": 1}
     sorted_langs = sorted(langs.items(), key=lambda kv: kv[1], reverse=True)[:6]
     total_bytes = sum(v for _, v in sorted_langs) or 1
     synced = html.escape(metrics["synced_label"])
@@ -582,30 +685,52 @@ def main() -> None:
     out_dir = Path(os.environ.get("OUT_DIR", "dist"))
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    rest = fetch_rest_metrics(username, token)
-    created_date = datetime.fromisoformat(rest["created_at"].replace("Z", "+00:00")).date()
-    current_year = datetime.now(timezone.utc).year
+    gql = fetch_graphql_profile(username, token)
 
-    calendar = fetch_contributions_calendar(username, created_date.year, current_year)
-    gql = fetch_graphql_private_extras(username, token, created_date.year, current_year)
+    need_repos = not (gql and "languages" in gql and gql["owned_repos"] > 0)
+    need_prs = not (gql and "prs" in gql)
+    rest: dict[str, Any] = {}
+    try:
+        rest = fetch_rest_metrics(username, token, need_repos=need_repos, need_prs=need_prs)
+    except Exception as exc:
+        if not gql:
+            raise
+        print(f"Warning: optional REST fetch skipped ({exc})", file=sys.stderr)
 
-    # Prefer GraphQL metrics when METRICS_TOKEN/token grants full visibility
-    commits = gql["commits"] if gql and gql["commits"] > rest["public_commits"] else rest["public_commits"]
-    prs = gql["prs"] if gql and gql["prs"] >= rest["prs"] else rest["prs"]
-    owned_repos = gql["owned_repos"] if gql else rest["owned_repos"]
-    stars = gql["stars"] if gql else rest["stars"]
-    languages = gql["languages"] if gql and sum(gql["languages"].values()) > sum(rest["languages"].values()) else rest["languages"]
+    if gql:
+        display_name = gql["name"]
+        login = gql["login"]
+        created_date = gql["created_date"]
+        calendar = gql["calendar"]
+        commits = max(int(gql["commits"]), int(rest.get("public_commits", 0)))
+        prs = gql.get("prs", rest.get("prs", 0))
+        owned_repos = gql.get("owned_repos", rest.get("owned_repos", 0))
+        stars = gql.get("stars", rest.get("stars", 0))
+        languages = gql.get("languages") or rest.get("languages") or {}
+        has_private_scope = bool(gql.get("has_private_scope"))
+    else:
+        display_name = rest["name"]
+        login = rest["login"]
+        created_date = datetime.fromisoformat(rest["created_at"].replace("Z", "+00:00")).date()
+        current_year = datetime.now(timezone.utc).year
+        calendar = fetch_contributions_calendar_html(username, created_date.year, current_year)
+        commits = int(rest.get("public_commits", 0))
+        prs = int(rest.get("prs", 0))
+        owned_repos = int(rest.get("owned_repos", 0))
+        stars = int(rest.get("stars", 0))
+        languages = rest.get("languages") or {}
+        has_private_scope = False
 
     now_ist = datetime.now(timezone(timedelta(hours=5, minutes=30)))
     synced_label = now_ist.strftime("%b %d, %Y %H:%M IST")
 
     metrics = {
-        "display_name": rest["name"],
-        "login": rest["login"],
+        "display_name": display_name,
+        "login": login,
         "since_label": fmt_short_date(created_date) + f", {created_date.year}",
         "synced_label": synced_label,
         "commits": commits,
-        "has_private_scope": bool(gql and gql.get("has_private_scope")),
+        "has_private_scope": has_private_scope,
         "prs": prs,
         "owned_repos": owned_repos,
         "stars": stars,
@@ -619,11 +744,16 @@ def main() -> None:
     (out_dir / "sync-meta.json").write_text(json.dumps({k: v for k, v in metrics.items() if k != "languages"}, indent=2), encoding="utf-8")
 
     print(
-        f"Generated synced metrics in {out_dir}: "
+        f"Generated synced metrics in {out_dir} (gql={bool(gql)}): "
         f"contributions={metrics['total_contributions']}, last_year={metrics['last_year_contributions']}, "
-        f"commits={metrics['commits']}, streak={metrics['current_streak']}/{metrics['longest_streak']}"
+        f"commits={metrics['commits']}, prs={metrics['prs']}, repos={metrics['owned_repos']}, "
+        f"streak={metrics['current_streak']}/{metrics['longest_streak']}"
     )
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        print(f"::error::generate_stats.py failed: {type(exc).__name__}: {exc}", file=sys.stderr)
+        raise
