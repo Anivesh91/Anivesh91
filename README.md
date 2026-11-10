@@ -3,6 +3,13 @@
 
   <br /><br />
 
+  <h1 align="center">Hi, I'm Anivesh Sikarwar 👋</h1>
+
+  <p align="center">
+    <b>Full-Stack Developer</b> interested in <b>Backend Engineering &amp; System Design</b>.<br />
+    Building scalable, production-oriented software systems &amp; strengthening DSA fundamentals.
+  </p>
+
   <p align="center">
     <a href="https://github.com/Anivesh91">GitHub</a> ·
     <a href="https://www.linkedin.com/in/anivesh-sikarwar-6a9a12314">LinkedIn</a> ·
@@ -14,11 +21,6 @@
     <img src="https://img.shields.io/badge/CSE%20Undergrad-SGSITS%2C%20Indore-111827?style=for-the-badge" alt="CSE Undergrad at SGSITS Indore" />
     <img src="https://img.shields.io/badge/Focus-Backend%20%26%20System%20Design-6D28D9?style=for-the-badge" alt="Backend and System Design" />
     <img src="https://img.shields.io/badge/Exploring-Cloud%2C%20DevOps%20%26%20DSA-0891B2?style=for-the-badge" alt="Cloud DevOps and DSA" />
-  </p>
-
-  <p align="center">
-    <b>Full-Stack Developer</b> interested in <b>Backend Engineering &amp; System Design</b>.<br />
-    Building scalable, production-oriented software systems &amp; strengthening DSA fundamentals.
   </p>
 </div>
 
