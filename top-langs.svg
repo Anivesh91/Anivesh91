@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="188" viewBox="0 0 360 188" role="img" aria-label="Most Used Languages">
+  <title>Most Used Languages</title>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif; }
+  </style>
+  <defs>
+    <clipPath id="lang-bar-clip">
+      <rect x="22" y="48" width="316" height="9" rx="4.5" />
+    </clipPath>
+    <linearGradient id="accent-line-l" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="60%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0.15" />
+    </linearGradient>
+    <radialGradient id="lang-glow" cx="18%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#ea580c" stop-opacity="0.14" />
+      <stop offset="100%" stop-color="#0d1117" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="360" height="188" rx="14" fill="#0d1117" stroke="#26191e" stroke-width="1.2" />
+  <rect width="360" height="188" rx="14" fill="url(#lang-glow)" />
+  <rect x="22" y="1" width="316" height="2" rx="1" fill="url(#accent-line-l)" />
+
+  <text x="22" y="30" fill="#f8fafc" font-size="15.5" font-weight="700">Top Languages</text>
+  <text x="338" y="29" fill="#94a3b8" font-size="11" text-anchor="end">Owned repos</text>
+
+  <g clip-path="url(#lang-bar-clip)">
+    <rect x="22.00" y="48" width="197.39" height="9" fill="#f1e05a" />
+    <rect x="219.39" y="48" width="100.18" height="9" fill="#3178c6" />
+    <rect x="319.58" y="48" width="8.69" height="9" fill="#00b4ab" />
+    <rect x="328.26" y="48" width="5.55" height="9" fill="#f34b7d" />
+    <rect x="333.81" y="48" width="3.11" height="9" fill="#da3434" />
+    <rect x="336.93" y="48" width="1.07" height="9" fill="#000080" />
+  </g>
+
+  <g transform="translate(22, 82)">
+    <circle cx="5" cy="-4" r="4.5" fill="#f1e05a" stroke="rgba(255,255,255,0.24)" stroke-width="0.6" />
+    <text x="16" y="0" fill="#e2e8f0" font-size="12.5" font-weight="500">JavaScript</text>
+    <text x="150" y="0" fill="#94a3b8" font-size="11.5" font-weight="600" text-anchor="end">62.5%</text>
+  </g>
+  <g transform="translate(187, 82)">
+    <circle cx="5" cy="-4" r="4.5" fill="#3178c6" stroke="rgba(255,255,255,0.24)" stroke-width="0.6" />
+    <text x="16" y="0" fill="#e2e8f0" font-size="12.5" font-weight="500">TypeScript</text>
+    <text x="150" y="0" fill="#94a3b8" font-size="11.5" font-weight="600" text-anchor="end">31.7%</text>
+  </g>
+  <g transform="translate(22, 110)">
+    <circle cx="5" cy="-4" r="4.5" fill="#00b4ab" stroke="rgba(255,255,255,0.24)" stroke-width="0.6" />
+    <text x="16" y="0" fill="#e2e8f0" font-size="12.5" font-weight="500">Dart</text>
+    <text x="150" y="0" fill="#94a3b8" font-size="11.5" font-weight="600" text-anchor="end">2.7%</text>
+  </g>
+  <g transform="translate(187, 110)">
+    <circle cx="5" cy="-4" r="4.5" fill="#f34b7d" stroke="rgba(255,255,255,0.24)" stroke-width="0.6" />
+    <text x="16" y="0" fill="#e2e8f0" font-size="12.5" font-weight="500">C++</text>
+    <text x="150" y="0" fill="#94a3b8" font-size="11.5" font-weight="600" text-anchor="end">1.8%</text>
+  </g>
+  <g transform="translate(22, 138)">
+    <circle cx="5" cy="-4" r="4.5" fill="#da3434" stroke="rgba(255,255,255,0.24)" stroke-width="0.6" />
+    <text x="16" y="0" fill="#e2e8f0" font-size="12.5" font-weight="500">CMake</text>
+    <text x="150" y="0" fill="#94a3b8" font-size="11.5" font-weight="600" text-anchor="end">1.0%</text>
+  </g>
+  <g transform="translate(187, 138)">
+    <circle cx="5" cy="-4" r="4.5" fill="#000080" stroke="rgba(255,255,255,0.24)" stroke-width="0.6" />
+    <text x="16" y="0" fill="#e2e8f0" font-size="12.5" font-weight="500">Lua</text>
+    <text x="150" y="0" fill="#94a3b8" font-size="11.5" font-weight="600" text-anchor="end">0.3%</text>
+  </g>
+
+  <text x="338" y="174" fill="#64748b" font-size="10" text-anchor="end">Live Repo Scan • Nov 14, 2026 20:25 IST</text>
+</svg>

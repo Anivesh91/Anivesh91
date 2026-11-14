@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="188" viewBox="0 0 460 188" role="img" aria-label="Anivesh Sikarwar GitHub Stats">
+  <title>Anivesh Sikarwar (@Anivesh91) GitHub Stats</title>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif; }
+    @keyframes ringPulse {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+    .ring-arc { animation: ringPulse 3.2s ease-in-out infinite; }
+  </style>
+  <defs>
+    <linearGradient id="accent-line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="55%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0.15" />
+    </linearGradient>
+    <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#fb923c" />
+    </linearGradient>
+    <radialGradient id="card-glow" cx="84%" cy="52%" r="42%">
+      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#0d1117" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="460" height="188" rx="14" fill="#0d1117" stroke="#26191e" stroke-width="1.2" />
+  <rect width="460" height="188" rx="14" fill="url(#card-glow)" />
+  <rect x="22" y="1" width="416" height="2" rx="1" fill="url(#accent-line)" />
+
+  <text x="22" y="30" fill="#f8fafc" font-size="15.5" font-weight="700">GitHub Overview</text>
+  <text x="438" y="29" fill="#f87171" font-size="11.5" font-weight="600" text-anchor="end">@Anivesh91</text>
+
+    <g transform="translate(22, 58)">
+      <g transform="translate(0, -11.5) scale(0.92)" fill="#ef4444">
+        <path d="M8 1.5l1.8 4.4 4.7.4-3.6 3.1 1.1 4.6L8 11.5 4 14l1.1-4.6L1.5 6.3l4.7-.4z" />
+      </g>
+      <text x="23" y="0" fill="#cbd5e1" font-size="12.5" font-weight="500">Total Contributions</text>
+      <text x="292" y="0" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="end">245</text>
+    </g>
+    <g transform="translate(22, 82)">
+      <g transform="translate(0, -11.5) scale(0.92)" fill="#f97316">
+        <path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1zm1.5 4v5.5h2V6h-2zm3.5-2v7.5h2V4H8zm3.5 3.5v4h2v-4h-2z" />
+      </g>
+      <text x="23" y="0" fill="#cbd5e1" font-size="12.5" font-weight="500">Contributions (Last Year)</text>
+      <text x="292" y="0" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="end">244</text>
+    </g>
+    <g transform="translate(22, 106)">
+      <g transform="translate(0, -11.5) scale(0.92)" fill="#fb7185">
+        <path d="M8 5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM1.5 7.25h2.2v1.5H1.5v-1.5zm10.8 0h2.2v1.5h-2.2v-1.5z" />
+      </g>
+      <text x="23" y="0" fill="#cbd5e1" font-size="12.5" font-weight="500">Public Commits</text>
+      <text x="292" y="0" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="end">221</text>
+    </g>
+    <g transform="translate(22, 130)">
+      <g transform="translate(0, -11.5) scale(0.92)" fill="#fb923c">
+        <path d="M4.5 3.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm0 6a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm7 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM3.8 6.4h1.4v3.2H3.8V6.4zm5-1.4h2.7a.7.7 0 01.7.7v3.9h-1.4V6.4H8.8V5z" />
+      </g>
+      <text x="23" y="0" fill="#cbd5e1" font-size="12.5" font-weight="500">Pull Requests</text>
+      <text x="292" y="0" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="end">13</text>
+    </g>
+    <g transform="translate(22, 154)">
+      <g transform="translate(0, -11.5) scale(0.92)" fill="#f87171">
+        <path d="M3 2.5A1.5 1.5 0 014.5 1h7A1.5 1.5 0 0113 2.5v11a.5.5 0 01-.78.41L8 11.06l-4.22 2.85A.5.5 0 013 13.5v-11z" />
+      </g>
+      <text x="23" y="0" fill="#cbd5e1" font-size="12.5" font-weight="500">Owned Repos / Stars</text>
+      <text x="292" y="0" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="end">8  (0 ★)</text>
+    </g>
+
+  <!-- Right Activity Gauge -->
+  <g transform="translate(388, 96)">
+    <circle cx="0" cy="0" r="34" fill="none" stroke="#1e2430" stroke-width="6.5" />
+    <circle class="ring-arc" cx="0" cy="0" r="34" fill="none" stroke="url(#ring-grad)"
+            stroke-width="6.5" stroke-linecap="round"
+            transform="rotate(-90)" stroke-dasharray="142.81 70.82" />
+    <text x="0" y="3" fill="#ffffff" font-size="19" font-weight="800" text-anchor="middle">49</text>
+    <text x="0" y="18" fill="#fb923c" font-size="9" font-weight="700" text-anchor="middle">ACTIVE DAYS</text>
+  </g>
+
+  <text x="438" y="176" fill="#64748b" font-size="10" text-anchor="end">Auto-synced • Nov 14, 2026 20:25 IST</text>
+</svg>
